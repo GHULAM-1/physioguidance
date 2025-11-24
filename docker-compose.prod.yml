@@ -1,0 +1,71 @@
+version: '3.8'
+
+# Production Docker Compose Configuration
+# Note: In actual production, services would be deployed to Google Cloud Platform
+# This configuration is for reference or hybrid deployments
+
+services:
+  # Backend - Deployed to Cloud Run in production
+  backend:
+    image: gcr.io/${GCP_PROJECT_ID}/physioguidance-backend:${VERSION:-latest}
+    container_name: physioguidance-backend-prod
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      # Production GCP services (no emulators)
+      - BIGQUERY_PROJECT_ID=${GCP_PROJECT_ID}
+      - BIGQUERY_DATASET=${BIGQUERY_DATASET}
+      # Storage uses real GCP credentials
+      - STORAGE_PROJECT_ID=${GCP_PROJECT_ID}
+      - STORAGE_BUCKET=${STORAGE_BUCKET}
+      # Cloud Run service URL
+      - CLOUD_RUN_SERVICE_URL=${CLOUD_RUN_SERVICE_URL}
+      # GCP credentials
+      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcp-credentials.json
+    volumes:
+      - ./secrets:/secrets:ro
+    restart: unless-stopped
+    networks:
+      - physioguidance-network
+
+  # Frontend - Can be deployed to Cloud Run, Vercel, or static hosting
+  frontend:
+    image: gcr.io/${GCP_PROJECT_ID}/physioguidance-frontend:${VERSION:-latest}
+    container_name: physioguidance-frontend-prod
+    ports:
+      - "80:8080"
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      # Production BigQuery configuration
+      - NEXT_PUBLIC_BIGQUERY_PROJECT_ID=${GCP_PROJECT_ID}
+      - NEXT_PUBLIC_BIGQUERY_DATASET=${BIGQUERY_DATASET}
+      # Backend API URL (Cloud Run service)
+      - NEXT_PUBLIC_API_URL=${BACKEND_API_URL}
+      # GCP credentials (if server-side operations needed)
+      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcp-credentials.json
+    volumes:
+      - ./secrets:/secrets:ro
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - physioguidance-network
+
+networks:
+  physioguidance-network:
+    driver: bridge
+
+# Production Deployment Notes:
+# 1. Backend: Deploy to Google Cloud Run
+#    - gcloud run deploy physioguidance-backend --image gcr.io/PROJECT_ID/backend
+# 2. Frontend: Options:
+#    - Cloud Run (containerized Next.js)
+#    - Vercel (serverless Next.js)
+#    - Cloud Storage + Cloud CDN (static export)
+# 3. Services:
+#    - BigQuery: Use real Google BigQuery service
+#    - Cloud Storage: Use real Google Cloud Storage buckets
+#    - No emulators in production

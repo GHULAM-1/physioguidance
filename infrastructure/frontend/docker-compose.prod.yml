@@ -1,0 +1,30 @@
+version: '3.8'
+
+# Production Frontend configuration
+# In production, frontend can be deployed to Cloud Run, Vercel, or static hosting
+
+services:
+  # Frontend service configuration for production deployment
+  frontend:
+    image: gcr.io/PROJECT_ID/physioguidance-frontend:latest
+    container_name: physioguidance-frontend-prod
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      # Production BigQuery configuration
+      - NEXT_PUBLIC_BIGQUERY_PROJECT_ID=${GCP_PROJECT_ID}
+      - NEXT_PUBLIC_BIGQUERY_DATASET=${BIGQUERY_DATASET}
+      # Backend API URL (Cloud Run service)
+      - NEXT_PUBLIC_API_URL=${BACKEND_API_URL}
+      # GCP credentials (if server-side operations needed)
+      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcp-credentials.json
+    volumes:
+      - ./secrets:/secrets:ro
+    restart: unless-stopped
+
+# Note: For production, consider deploying to:
+# - Cloud Run (containerized)
+# - Vercel (serverless Next.js)
+# - Cloud Storage + Cloud CDN (static export)

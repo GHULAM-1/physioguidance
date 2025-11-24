@@ -1,0 +1,33 @@
+version: '3.8'
+
+# Production Backend configuration
+# In production, backend is deployed to Google Cloud Run
+# and connects to real GCP services
+
+services:
+  # Backend service configuration for production deployment
+  # This is a reference configuration - actual deployment uses Cloud Run
+  backend:
+    image: gcr.io/PROJECT_ID/physioguidance-backend:latest
+    container_name: physioguidance-backend-prod
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      # Production GCP services (no emulators)
+      - BIGQUERY_PROJECT_ID=${GCP_PROJECT_ID}
+      - BIGQUERY_DATASET=${BIGQUERY_DATASET}
+      # Storage uses real GCP credentials
+      - STORAGE_PROJECT_ID=${GCP_PROJECT_ID}
+      - STORAGE_BUCKET=${STORAGE_BUCKET}
+      # Cloud Run service URL
+      - CLOUD_RUN_SERVICE_URL=${CLOUD_RUN_SERVICE_URL}
+      # GCP credentials
+      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcp-credentials.json
+    volumes:
+      - ./secrets:/secrets:ro
+    restart: unless-stopped
+
+# Note: In actual production, this would be deployed to Cloud Run
+# This docker-compose file is for reference or hybrid deployments

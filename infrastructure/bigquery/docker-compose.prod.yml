@@ -1,0 +1,12 @@
+version: '3.8'
+
+# Production BigQuery configuration
+# In production, you would connect to actual Google BigQuery service
+# This file is a placeholder for future production configuration
+
+services:
+  # No local emulator in production
+  # Application should use real BigQuery service with proper credentials
+  dummy:
+    image: alpine
+    command: echo "Production uses real Google BigQuery"

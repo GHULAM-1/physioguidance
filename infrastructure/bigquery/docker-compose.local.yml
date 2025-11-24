@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  bigquery-emulator:
+    image: ghcr.io/goccy/bigquery-emulator:latest
+    platform: linux/amd64
+    container_name: bigquery-emulator
+    ports:
+      - "9050:9050"
+      - "9060:9060"
+    environment:
+      - BIGQUERY_PROJECT=test-project
+      - BIGQUERY_DATASET=test_dataset
+    command:
+      - "--project=test-project"
+      - "--dataset=test_dataset"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9050"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - physioguidance-network
+
+networks:
+  physioguidance-network:
+    external: true

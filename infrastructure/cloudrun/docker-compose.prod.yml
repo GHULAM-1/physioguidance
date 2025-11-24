@@ -1,0 +1,12 @@
+version: '3.8'
+
+# Production Cloud Run configuration
+# In production, your backend will be deployed to actual Google Cloud Run
+# This file is a placeholder for future production configuration
+
+services:
+  # No local emulator in production
+  # Application should be deployed to real Cloud Run service
+  dummy:
+    image: alpine
+    command: echo "Production uses real Google Cloud Run"

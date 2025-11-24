@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # BigQuery Emulator with persistent storage
+  bigquery-emulator:
+    image: ghcr.io/goccy/bigquery-emulator:latest
+    platform: linux/amd64
+    container_name: bigquery-emulator
+    ports:
+      - "9050:9050"  # BigQuery API endpoint
+      - "9060:9060"  # gRPC endpoint
+    volumes:
+      - bigquery-data:/data
+    environment:
+      - BIGQUERY_PROJECT=test-project
+      - BIGQUERY_DATASET=test_dataset
+      - BIGQUERY_DATA_FROM_YAML=/data/schema.yaml
+    command:
+      - "--project=test-project"
+      - "--dataset=test_dataset"
+      - "--data-from-yaml=/data/schema.yaml"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9050"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Cloud Storage Emulator with persistent storage
+  storage-emulator:
+    image: fsouza/fake-gcs-server:latest
+    container_name: storage-emulator
+    ports:
+      - "4443:4443"
+    volumes:
+      - storage-data:/data
+    command:
+      - "-scheme"
+      - "http"
+      - "-port"
+      - "4443"
+      - "-external-url"
+      - "http://localhost:4443"
+      - "-data"
+      - "/data"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:4443/storage/v1/b"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Next.js Application
+  nextjs-app:
+    image: nextjs-cloudrun-app:v3
+    container_name: nextjs-app-persistent
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - BIGQUERY_PROJECT_ID=test-project
+      - BIGQUERY_DATASET_ID=test_dataset
+      - BIGQUERY_EMULATOR_HOST=http://bigquery-emulator:9050
+      - STORAGE_EMULATOR_HOST=http://storage-emulator:4443
+      - STORAGE_BUCKET_NAME=test-bucket
+      - STORAGE_PROJECT_ID=test-project
+    depends_on:
+      bigquery-emulator:
+        condition: service_healthy
+      storage-emulator:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - gcp-network
+
+networks:
+  gcp-network:
+    driver: bridge
+
+volumes:
+  bigquery-data:
+    driver: local
+  storage-data:
+    driver: local

@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  storage-emulator:
+    image: fsouza/fake-gcs-server:latest
+    container_name: storage-emulator
+    ports:
+      - "4443:4443"
+    command:
+      - "-scheme"
+      - "http"
+      - "-port"
+      - "4443"
+      - "-external-url"
+      - "http://localhost:4443"
+    volumes:
+      - gcs-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:4443/storage/v1/b"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - physioguidance-network
+
+volumes:
+  gcs-data:
+
+networks:
+  physioguidance-network:
+    external: true

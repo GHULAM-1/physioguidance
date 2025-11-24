@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  # Next.js Frontend Application
+  frontend:
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile
+    container_name: physioguidance-frontend
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+      - PORT=8080
+      # BigQuery configuration (frontend only needs BigQuery)
+      - NEXT_PUBLIC_BIGQUERY_PROJECT_ID=test-project
+      - NEXT_PUBLIC_BIGQUERY_DATASET=test_dataset
+      - BIGQUERY_EMULATOR_HOST=bigquery-emulator:9050
+      # Backend API URL
+      - NEXT_PUBLIC_API_URL=http://backend:3000
+    restart: unless-stopped
+    networks:
+      - physioguidance-network
+    volumes:
+      - ../../frontend:/app
+      - /app/node_modules
+      - /app/.next
+
+networks:
+  physioguidance-network:
+    external: true

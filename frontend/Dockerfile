@@ -1,50 +1,53 @@
-# Stage 1: Dependencies
-FROM node:20-alpine AS deps
-RUN corepack enable && corepack prepare pnpm@latest --activate
-WORKDIR /app
+FROM node:20-alpine AS base
 
-# Copy package files
-COPY package.json pnpm-lock.yaml ./
+# Install dependencies only when needed
+FROM base AS deps
+RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
 
 # Install dependencies
+COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
-# Stage 2: Build
-FROM node:20-alpine AS builder
+# Rebuild the source code only when needed
+FROM base AS builder
 RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
-
-# Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Build the Next.js app
-RUN pnpm run build
+# Next.js collects completely anonymous telemetry data about general usage.
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# Stage 3: Runner
-FROM node:20-alpine AS runner
+RUN pnpm build
+
+# Production image, copy all the files and run next
+FROM base AS runner
 RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
 
 ENV NODE_ENV=production
-# Cloud Run sets PORT environment variable
-ENV PORT=8080
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# Create a non-root user
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy necessary files
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
 
-# Set correct permissions
-RUN chown -R nextjs:nodejs /app
+# Set the correct permission for prerender cache
+RUN mkdir .next
+RUN chown nextjs:nodejs .next
+
+# Automatically leverage output traces to reduce image size
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
 EXPOSE 8080
 
-# Start the Next.js app
+ENV PORT=8080
+ENV HOSTNAME="0.0.0.0"
+
 CMD ["node", "server.js"]

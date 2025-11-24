@@ -1,0 +1,108 @@
+services:
+  # BigQuery Emulator
+  bigquery-emulator:
+    image: ghcr.io/goccy/bigquery-emulator:latest
+    platform: linux/amd64
+    container_name: bigquery-emulator
+    ports:
+      - "9050:9050"
+      - "9060:9060"
+    environment:
+      - BIGQUERY_PROJECT=test-project
+      - BIGQUERY_DATASET=test_dataset
+    command:
+      - "--project=test-project"
+      - "--dataset=test_dataset"
+    restart: unless-stopped
+    networks:
+      - physioguidance-network
+
+  # Cloud Storage Emulator
+  storage-emulator:
+    image: fsouza/fake-gcs-server:latest
+    container_name: storage-emulator
+    ports:
+      - "4443:4443"
+    command:
+      - "-scheme"
+      - "http"
+      - "-port"
+      - "4443"
+      - "-external-url"
+      - "http://localhost:4443"
+    volumes:
+      - gcs-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:4443/storage/v1/b"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - physioguidance-network
+
+  # NestJS Backend Application
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: physioguidance-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      # BigQuery configuration
+      - BIGQUERY_PROJECT_ID=test-project
+      - BIGQUERY_DATASET=test_dataset
+      - BIGQUERY_EMULATOR_HOST=bigquery-emulator:9050
+      # Cloud Storage configuration
+      - STORAGE_PROJECT_ID=test-project
+      - STORAGE_BUCKET=test-bucket
+      - STORAGE_EMULATOR_HOST=http://storage-emulator:4443
+      # Cloud Run configuration (for local dev, backend runs as container)
+      - CLOUD_RUN_SERVICE_URL=http://backend:3000
+    depends_on:
+      - bigquery-emulator
+      - storage-emulator
+    restart: unless-stopped
+    networks:
+      - physioguidance-network
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  # Next.js Frontend Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: physioguidance-frontend
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+      - PORT=8080
+      # BigQuery configuration (frontend only needs BigQuery)
+      - NEXT_PUBLIC_BIGQUERY_PROJECT_ID=test-project
+      - NEXT_PUBLIC_BIGQUERY_DATASET=test_dataset
+      - BIGQUERY_EMULATOR_HOST=bigquery-emulator:9050
+      # Backend API URL (update when backend is ready)
+      - NEXT_PUBLIC_API_URL=http://backend:3000
+    depends_on:
+      - bigquery-emulator
+      - backend
+    restart: unless-stopped
+    networks:
+      - physioguidance-network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+
+volumes:
+  gcs-data:
+
+networks:
+  physioguidance-network:
+    driver: bridge
