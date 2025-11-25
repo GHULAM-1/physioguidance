@@ -10,7 +10,8 @@ import type {
   Role,
 } from '@/types/auth';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_VERSION = 'api/v1';
 
 // Helper function to get authentication headers
 const getAuthHeaders = () => {
@@ -23,7 +24,7 @@ const getAuthHeaders = () => {
 
 export const authApi = {
   async register(data: RegisterRequest): Promise<AuthResponse> {
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+    const response = await fetch(`${API_BASE_URL}/${API_VERSION}/auth/register`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -39,7 +40,7 @@ export const authApi = {
   },
 
   async login(data: LoginRequest): Promise<AuthResponse> {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    const response = await fetch(`${API_BASE_URL}/${API_VERSION}/auth/login`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -55,7 +56,7 @@ export const authApi = {
   },
 
   async createUser(data: CreateUserRequest): Promise<AuthResponse> {
-    const response = await fetch(`${API_BASE_URL}/auth/admin/create-user`, {
+    const response = await fetch(`${API_BASE_URL}/${API_VERSION}/admin/create-user`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -71,7 +72,7 @@ export const authApi = {
   },
 
   async getAllUsers(): Promise<UsersListResponse> {
-    const response = await fetch(`${API_BASE_URL}/auth/admin/users`, {
+    const response = await fetch(`${API_BASE_URL}/${API_VERSION}/admin/users`, {
       method: 'GET',
       headers: getAuthHeaders(),
       credentials: 'include',
@@ -87,7 +88,7 @@ export const authApi = {
 
   async getUsersByDepartment(role: Role): Promise<UsersListResponse> {
     const response = await fetch(
-      `${API_BASE_URL}/auth/admin/department/${role}`,
+      `${API_BASE_URL}/${API_VERSION}/admin/department/${role}`,
       {
         method: 'GET',
         headers: getAuthHeaders(),
@@ -104,7 +105,7 @@ export const authApi = {
   },
 
   async getCurrentUser(): Promise<AuthResponse> {
-    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+    const response = await fetch(`${API_BASE_URL}/${API_VERSION}/auth/me`, {
       method: 'GET',
       headers: getAuthHeaders(),
       credentials: 'include',
@@ -119,7 +120,7 @@ export const authApi = {
   },
 
   async updateUser(userId: string, data: UpdateUserRequest): Promise<AuthResponse> {
-    const response = await fetch(`${API_BASE_URL}/auth/admin/users/${userId}`, {
+    const response = await fetch(`${API_BASE_URL}/${API_VERSION}/admin/users/${userId}`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -135,7 +136,7 @@ export const authApi = {
   },
 
   async deleteUser(userId: string): Promise<DeleteUserResponse> {
-    const response = await fetch(`${API_BASE_URL}/auth/admin/users/${userId}`, {
+    const response = await fetch(`${API_BASE_URL}/${API_VERSION}/admin/users/${userId}`, {
       method: 'DELETE',
       headers: getAuthHeaders(),
       credentials: 'include',
@@ -150,7 +151,7 @@ export const authApi = {
   },
 
   async getAvailableRoles(): Promise<{ success: boolean; data: string[] }> {
-    const response = await fetch(`${API_BASE_URL}/auth/roles`, {
+    const response = await fetch(`${API_BASE_URL}/${API_VERSION}/auth/roles`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -165,7 +166,7 @@ export const authApi = {
   },
 
   async getAvailablePrivileges(): Promise<{ success: boolean; data: string[] }> {
-    const response = await fetch(`${API_BASE_URL}/auth/privileges`, {
+    const response = await fetch(`${API_BASE_URL}/${API_VERSION}/auth/privileges`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',

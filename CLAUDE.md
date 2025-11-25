@@ -278,21 +278,31 @@ frontend/
 
 ## API Endpoints
 
-### Public Endpoints (No Auth Required)
-- `POST /auth/register` - User self-registration
-- `POST /auth/login` - User login
+**Base URL:** `/api/v1`
 
-### Protected Endpoints (Auth Required)
-- `GET /auth/me` - Get current user info
+All endpoints are prefixed with `/api/v1` for versioning and follow a departmental structure.
 
-### Admin Endpoints (ADMIN Role Required)
-- `GET /auth/admin/users` - List all users with privileges
-- `GET /auth/admin/department/:role` - List users by department
+### Auth Endpoints (Authentication & Authorization)
 
-### Admin Editor Endpoints (ADMIN Role + EDITOR Privilege Required)
-- `POST /auth/admin/create-user` - Create new user
-- `PUT /auth/admin/users/:userId` - Update user
-- `DELETE /auth/admin/users/:userId` - Delete user
+**Public Endpoints (No Auth Required):**
+- `POST /api/v1/auth/register` - User self-registration
+- `POST /api/v1/auth/login` - User login
+
+**Protected Endpoints (Auth Required):**
+- `GET /api/v1/auth/me` - Get current user info
+- `GET /api/v1/auth/roles` - Get available roles (dynamic from ENUM)
+- `GET /api/v1/auth/privileges` - Get available privileges (dynamic from ENUM)
+
+### Admin Endpoints (Admin Department)
+
+**Admin Viewer Endpoints (ADMIN Role Required):**
+- `GET /api/v1/admin/users` - List all users with privileges
+- `GET /api/v1/admin/department/:role` - List users by department
+
+**Admin Editor Endpoints (ADMIN Role + EDITOR Privilege Required):**
+- `POST /api/v1/admin/create-user` - Create new user
+- `PUT /api/v1/admin/users/:userId` - Update user
+- `DELETE /api/v1/admin/users/:userId` - Delete user
 
 ---
 
