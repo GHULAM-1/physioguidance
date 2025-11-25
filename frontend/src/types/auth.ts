@@ -41,6 +41,7 @@ export type AuthResponse = {
   success: boolean;
   message: string;
   data?: User;
+  token?: string;
 };
 
 export type UsersListResponse = {

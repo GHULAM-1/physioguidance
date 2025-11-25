@@ -147,7 +147,7 @@ function AdminDashboard() {
             id="department"
             value={selectedDepartment}
             onChange={(e) => setSelectedDepartment(e.target.value as 'all' | Role)}
-            className="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border border-gray-300 py-2 pl-3 pr-10 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
           >
             <option value="all">All Users</option>
             <option value={Role.USER}>USER</option>
@@ -213,11 +213,11 @@ function AdminDashboard() {
 
       {/* Create User Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-10 overflow-y-auto">
+        <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-screen items-end justify-center px-4 pb-20 pt-4 text-center sm:block sm:p-0">
             <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setShowModal(false)} />
 
-            <div className="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+            <div className="relative inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle z-50">
               <form onSubmit={handleSubmit}>
                 <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                   <h3 className="mb-4 text-lg font-medium leading-6 text-gray-900">
@@ -236,7 +236,7 @@ function AdminDashboard() {
                       <input
                         type="text"
                         required
-                        className="mt-1 block w-full rounded-md border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
+                        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       />
@@ -247,7 +247,7 @@ function AdminDashboard() {
                       <input
                         type="email"
                         required
-                        className="mt-1 block w-full rounded-md border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
+                        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       />
@@ -258,7 +258,7 @@ function AdminDashboard() {
                       <input
                         type="password"
                         required
-                        className="mt-1 block w-full rounded-md border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
+                        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       />
@@ -274,7 +274,7 @@ function AdminDashboard() {
                               id={role}
                               checked={selectedRoles.includes(role)}
                               onChange={() => handleRoleToggle(role)}
-                              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                              className="h-4 w-4 rounded border border-gray-300 text-blue-600 focus:ring-blue-500"
                             />
                             <label htmlFor={role} className="ml-2 block text-sm font-medium text-gray-700">
                               {role}
@@ -285,7 +285,7 @@ function AdminDashboard() {
                               <select
                                 value={privileges[role]}
                                 onChange={(e) => handlePrivilegeChange(role, e.target.value as Privilege)}
-                                className="block w-full rounded-md border-gray-300 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                                className="block w-full rounded-md border border-gray-300 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
                               >
                                 <option value={Privilege.VIEWER}>VIEWER</option>
                                 <option value={Privilege.EDITOR}>EDITOR</option>

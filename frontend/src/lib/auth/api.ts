@@ -10,13 +10,20 @@ import type {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
+// Helper function to get authentication headers
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+};
+
 export const authApi = {
   async register(data: RegisterRequest): Promise<AuthResponse> {
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(data),
       credentials: 'include',
     });
@@ -32,9 +39,7 @@ export const authApi = {
   async login(data: LoginRequest): Promise<AuthResponse> {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(data),
       credentials: 'include',
     });
@@ -50,9 +55,7 @@ export const authApi = {
   async createUser(data: CreateUserRequest): Promise<AuthResponse> {
     const response = await fetch(`${API_BASE_URL}/auth/admin/create-user`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(data),
       credentials: 'include',
     });
@@ -68,9 +71,7 @@ export const authApi = {
   async getAllUsers(): Promise<UsersListResponse> {
     const response = await fetch(`${API_BASE_URL}/auth/admin/users`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       credentials: 'include',
     });
 
@@ -87,9 +88,7 @@ export const authApi = {
       `${API_BASE_URL}/auth/admin/department/${role}`,
       {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         credentials: 'include',
       }
     );
@@ -105,9 +104,7 @@ export const authApi = {
   async getCurrentUser(): Promise<AuthResponse> {
     const response = await fetch(`${API_BASE_URL}/auth/me`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       credentials: 'include',
     });
 

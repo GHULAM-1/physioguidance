@@ -28,26 +28,28 @@ export class AuthController {
   @Post('register')
   async register(@Body() registerDto: RegisterDto) {
     const user = await this.authService.register(registerDto);
+    const token = this.authService.generateToken(user);
     // Don't return password
     const { password, ...result } = user;
     return {
       success: true,
       message: 'User registered successfully',
       data: result,
+      token: token,
     };
   }
 
   @Post('login')
-  async login(@Body() loginDto: LoginDto, @Req() request: any) {
+  async login(@Body() loginDto: LoginDto) {
     const user = await this.authService.login(loginDto);
-    // Store user in session/request (simplified for now)
-    request.user = user;
+    const token = this.authService.generateToken(user);
 
     const { password, ...result } = user;
     return {
       success: true,
       message: 'Login successful',
       data: result,
+      token: token,
     };
   }
 

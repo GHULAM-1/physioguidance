@@ -11,6 +11,8 @@ import { CreateUserDto } from '../dto/auth/create-user.dto';
 import { Role } from '../bigquery/enums/roles.enum';
 import { Privilege } from '../bigquery/enums/privilege.enum';
 import { User } from '../bigquery/interfaces/user.interface';
+import * as jwt from 'jsonwebtoken';
+import { jwtConfig } from './jwt.config';
 
 @Injectable()
 export class AuthService {
@@ -81,5 +83,14 @@ export class AuthService {
 
   async getUsersByDepartment(role: Role): Promise<User[]> {
     return await this.bigQueryService.getUsersByRole(role);
+  }
+
+  generateToken(user: User): string {
+    const payload = {
+      userId: user.userId,
+      email: user.email,
+      roles: user.roles,
+    };
+    return jwt.sign(payload, jwtConfig.secret, { expiresIn: jwtConfig.expiresIn } as jwt.SignOptions);
   }
 }

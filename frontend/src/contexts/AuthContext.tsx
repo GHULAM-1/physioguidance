@@ -6,6 +6,7 @@ import { authApi } from '@/lib/auth/api';
 
 type AuthContextType = {
   user: User | null;
+  token: string | null;
   loading: boolean;
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
@@ -17,13 +18,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Check if user is already logged in (from localStorage)
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    const storedToken = localStorage.getItem('token');
+    if (storedUser && storedToken) {
       setUser(JSON.parse(storedUser));
+      setToken(storedToken);
     }
     setLoading(false);
   }, []);
@@ -31,9 +35,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (data: LoginRequest) => {
     try {
       const response = await authApi.login(data);
-      if (response.success && response.data) {
+      if (response.success && response.data && response.token) {
         setUser(response.data);
+        setToken(response.token);
         localStorage.setItem('user', JSON.stringify(response.data));
+        localStorage.setItem('token', response.token);
       }
     } catch (error) {
       throw error;
@@ -43,9 +49,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (data: RegisterRequest) => {
     try {
       const response = await authApi.register(data);
-      if (response.success && response.data) {
+      if (response.success && response.data && response.token) {
         setUser(response.data);
+        setToken(response.token);
         localStorage.setItem('user', JSON.stringify(response.data));
+        localStorage.setItem('token', response.token);
       }
     } catch (error) {
       throw error;
@@ -54,13 +62,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setUser(null);
+    setToken(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        token,
         loading,
         login,
         register,
