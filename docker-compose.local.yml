@@ -52,10 +52,12 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=3000
+      # CORS configuration
+      - CORS_ORIGINS=http://localhost:8080,http://localhost:3000
       # BigQuery configuration
       - BIGQUERY_PROJECT_ID=test-project
       - BIGQUERY_DATASET=test_dataset
-      - BIGQUERY_EMULATOR_HOST=bigquery-emulator:9050
+      - BIGQUERY_EMULATOR_HOST=http://bigquery-emulator:9050
       # Cloud Storage configuration
       - STORAGE_PROJECT_ID=test-project
       - STORAGE_BUCKET=test-bucket
@@ -68,9 +70,10 @@ services:
     restart: unless-stopped
     networks:
       - physioguidance-network
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
+    # Removed volume mounts to use built image with CORS enabled
+    # volumes:
+    #   - ./backend:/app
+    #   - /app/node_modules
 
   # Next.js Frontend Application
   frontend:
@@ -81,24 +84,25 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - PORT=8080
       # BigQuery configuration (frontend only needs BigQuery)
       - NEXT_PUBLIC_BIGQUERY_PROJECT_ID=test-project
       - NEXT_PUBLIC_BIGQUERY_DATASET=test_dataset
-      - BIGQUERY_EMULATOR_HOST=bigquery-emulator:9050
-      # Backend API URL (update when backend is ready)
-      - NEXT_PUBLIC_API_URL=http://backend:3000
+      - BIGQUERY_EMULATOR_HOST=http://bigquery-emulator:9050
+      # Backend API URL (browser connects to host port 3000)
+      - NEXT_PUBLIC_API_URL=http://localhost:3000
     depends_on:
       - bigquery-emulator
       - backend
     restart: unless-stopped
     networks:
       - physioguidance-network
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
+    # Removed volume mounts for production build - they were overriding the built files
+    # volumes:
+    #   - ./frontend:/app
+    #   - /app/node_modules
+    #   - /app/.next
 
 volumes:
   gcs-data:
