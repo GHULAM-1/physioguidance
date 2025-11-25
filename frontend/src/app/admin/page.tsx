@@ -42,6 +42,10 @@ function AdminDashboard() {
   const [showModal, setShowModal] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState<'all' | Role>('all');
 
+  // Dynamic roles and privileges from backend
+  const [availableRoles, setAvailableRoles] = useState<string[]>([]);
+  const [availablePrivileges, setAvailablePrivileges] = useState<string[]>([]);
+
   // Check if current user has EDITOR privilege for ADMIN role
   const hasEditorPrivilege = user?.privileges?.[Role.ADMIN] === Privilege.EDITOR;
 
@@ -70,6 +74,8 @@ function AdminDashboard() {
 
   useEffect(() => {
     loadUsers();
+    loadAvailableRoles();
+    loadAvailablePrivileges();
   }, []);
 
   useEffect(() => {
@@ -90,6 +96,24 @@ function AdminDashboard() {
       console.error('Failed to load users:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadAvailableRoles = async () => {
+    try {
+      const response = await authApi.getAvailableRoles();
+      setAvailableRoles(response.data);
+    } catch (err) {
+      console.error('Failed to load roles:', err);
+    }
+  };
+
+  const loadAvailablePrivileges = async () => {
+    try {
+      const response = await authApi.getAvailablePrivileges();
+      setAvailablePrivileges(response.data);
+    } catch (err) {
+      console.error('Failed to load privileges:', err);
     }
   };
 
@@ -292,10 +316,9 @@ function AdminDashboard() {
             className="mt-1 block w-full rounded-md border border-gray-300 py-2 pl-3 pr-10 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
           >
             <option value="all">All Users</option>
-            <option value={Role.USER}>USER</option>
-            <option value={Role.LEARNER}>LEARNER</option>
-            <option value={Role.ADMIN}>ADMIN</option>
-            <option value={Role.FINANCE}>FINANCE</option>
+            {availableRoles.map(role => (
+              <option key={role} value={role}>{role}</option>
+            ))}
           </select>
         </div>
 
@@ -417,29 +440,30 @@ function AdminDashboard() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Roles & Privileges</label>
-                      {Object.values(Role).filter(r => r !== Role.LEARNER).map((role) => (
+                      {availableRoles.filter(r => r !== 'LEARNER').map((role) => (
                         <div key={role} className="mb-3 rounded-md border border-gray-200 p-3">
                           <div className="flex items-center">
                             <input
                               type="checkbox"
                               id={role}
-                              checked={selectedRoles.includes(role)}
-                              onChange={() => handleRoleToggle(role)}
+                              checked={selectedRoles.includes(role as Role)}
+                              onChange={() => handleRoleToggle(role as Role)}
                               className="h-4 w-4 rounded border border-gray-300 text-blue-600 focus:ring-blue-500"
                             />
                             <label htmlFor={role} className="ml-2 block text-sm font-medium text-gray-700">
                               {role}
                             </label>
                           </div>
-                          {selectedRoles.includes(role) && (
+                          {selectedRoles.includes(role as Role) && (
                             <div className="ml-6 mt-2">
                               <select
-                                value={privileges[role]}
-                                onChange={(e) => handlePrivilegeChange(role, e.target.value as Privilege)}
+                                value={privileges[role as Role]}
+                                onChange={(e) => handlePrivilegeChange(role as Role, e.target.value as Privilege)}
                                 className="block w-full rounded-md border border-gray-300 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
                               >
-                                <option value={Privilege.VIEWER}>VIEWER</option>
-                                <option value={Privilege.EDITOR}>EDITOR</option>
+                                {availablePrivileges.map(priv => (
+                                  <option key={priv} value={priv}>{priv}</option>
+                                ))}
                               </select>
                             </div>
                           )}
@@ -526,30 +550,31 @@ function AdminDashboard() {
 
                 <div className="space-y-2">
                   <Label>Roles & Privileges</Label>
-                  {Object.values(Role).filter(r => r !== Role.LEARNER).map((role) => (
+                  {availableRoles.filter(r => r !== 'LEARNER').map((role) => (
                     <div key={role} className="rounded-md border border-gray-200 p-3 space-y-2">
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           id={`edit-${role}`}
-                          checked={editSelectedRoles.includes(role)}
-                          onCheckedChange={() => handleEditRoleToggle(role)}
+                          checked={editSelectedRoles.includes(role as Role)}
+                          onCheckedChange={() => handleEditRoleToggle(role as Role)}
                         />
                         <Label htmlFor={`edit-${role}`} className="font-medium cursor-pointer">
                           {role}
                         </Label>
                       </div>
-                      {editSelectedRoles.includes(role) && (
+                      {editSelectedRoles.includes(role as Role) && (
                         <div className="ml-6">
                           <Select
-                            value={editPrivileges[role]}
-                            onValueChange={(value) => handleEditPrivilegeChange(role, value as Privilege)}
+                            value={editPrivileges[role as Role]}
+                            onValueChange={(value) => handleEditPrivilegeChange(role as Role, value as Privilege)}
                           >
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value={Privilege.VIEWER}>VIEWER</SelectItem>
-                              <SelectItem value={Privilege.EDITOR}>EDITOR</SelectItem>
+                              {availablePrivileges.map(priv => (
+                                <SelectItem key={priv} value={priv}>{priv}</SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>

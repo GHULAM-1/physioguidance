@@ -148,4 +148,34 @@ export const authApi = {
 
     return response.json();
   },
+
+  async getAvailableRoles(): Promise<{ success: boolean; data: string[] }> {
+    const response = await fetch(`${API_BASE_URL}/auth/roles`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to fetch roles');
+    }
+
+    return response.json();
+  },
+
+  async getAvailablePrivileges(): Promise<{ success: boolean; data: string[] }> {
+    const response = await fetch(`${API_BASE_URL}/auth/privileges`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to fetch privileges');
+    }
+
+    return response.json();
+  },
 };

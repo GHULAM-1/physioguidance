@@ -61,6 +61,8 @@ services:
       - BIGQUERY_PROJECT_ID=test-project
       - BIGQUERY_DATASET=test_dataset
       - BIGQUERY_EMULATOR_HOST=http://bigquery-emulator:9050
+      # Auto-Migration (set to 'false' for production)
+      - AUTO_MIGRATE=true
       # Cloud Storage configuration
       - STORAGE_PROJECT_ID=test-project
       - STORAGE_BUCKET=test-bucket

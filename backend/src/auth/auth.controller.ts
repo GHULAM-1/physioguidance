@@ -114,6 +114,24 @@ export class AuthController {
     };
   }
 
+  @Get('roles')
+  async getAvailableRoles() {
+    // Return all roles from the ENUM - this is the single source of truth
+    return {
+      success: true,
+      data: Object.values(Role),
+    };
+  }
+
+  @Get('privileges')
+  async getAvailablePrivileges() {
+    // Return all privileges from the ENUM
+    return {
+      success: true,
+      data: Object.values(Privilege),
+    };
+  }
+
   @Put('admin/users/:userId')
   @UseGuards(AuthGuard, RolesGuard, PrivilegeGuard)
   @Roles(Role.ADMIN)

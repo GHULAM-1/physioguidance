@@ -3,6 +3,7 @@ export enum Role {
   LEARNER = 'LEARNER',
   ADMIN = 'ADMIN',
   FINANCE = 'FINANCE',
+  CONSULTANT = 'CONSULTANT',
 }
 
 // Helper function to get table name from role
