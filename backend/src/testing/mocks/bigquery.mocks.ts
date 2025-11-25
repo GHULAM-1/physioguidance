@@ -1,17 +1,4 @@
-export interface MockTable {
-  insert: jest.Mock;
-  exists: jest.Mock;
-}
-
-export interface MockDataset {
-  table: jest.Mock;
-  createTable: jest.Mock;
-}
-
-export interface MockBigQuery {
-  dataset: jest.Mock;
-  query: jest.Mock;
-}
+import { MockTable, MockDataset, MockBigQuery } from '../../types/testing/type';
 
 export function createMockTable(): MockTable {
   return {

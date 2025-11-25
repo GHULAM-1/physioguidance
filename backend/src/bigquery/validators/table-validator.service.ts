@@ -1,13 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BigQuery } from '@google-cloud/bigquery';
 import { RoleTableGenerator } from '../schemas/role-table.generator';
-
-export interface ValidationResult {
-  allTablesExist: boolean;
-  missingTables: string[];
-  existingTables: string[];
-  usersTableExists: boolean;
-}
+import { ValidationResult } from '../../types/bigquery/type';
 
 /**
  * TableValidatorService - Validates that all required tables exist

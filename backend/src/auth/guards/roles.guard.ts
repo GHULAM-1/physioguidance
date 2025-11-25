@@ -7,7 +7,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 import { Role } from '../../bigquery/enums/roles.enum';
-import { User } from '../../bigquery/interfaces/user.interface';
+import { User } from '../../types/auth/type';
 
 @Injectable()
 export class RolesGuard implements CanActivate {

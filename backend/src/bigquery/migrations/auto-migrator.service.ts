@@ -2,11 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { BigQuery } from '@google-cloud/bigquery';
 import { TableValidatorService } from '../validators/table-validator.service';
 import { RoleTableGenerator } from '../schemas/role-table.generator';
-
-export interface MigrationResult {
-  created: string[];
-  failed: Array<{ table: string; error: string }>;
-}
+import { MigrationResult } from '../../types/bigquery/type';
 
 /**
  * AutoMigratorService - Automatically creates missing tables

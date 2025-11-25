@@ -9,7 +9,7 @@ import { PRIVILEGE_KEY } from '../decorators/privilege.decorator';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 import { Privilege } from '../../bigquery/enums/privilege.enum';
 import { Role } from '../../bigquery/enums/roles.enum';
-import { User } from '../../bigquery/interfaces/user.interface';
+import { User } from '../../types/auth/type';
 import { BigQueryService } from '../../bigquery/bigquery.service';
 
 @Injectable()

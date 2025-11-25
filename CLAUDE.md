@@ -29,6 +29,120 @@ PhysioGuidance is a full-stack application for physiotherapy management with rol
 
 ---
 
+## TypeScript Conventions
+
+### Type vs Interface
+
+**CRITICAL RULE: Always use `type`, NEVER use `interface`**
+
+This project follows a strict convention of using TypeScript `type` declarations instead of `interface` declarations for all type definitions.
+
+**✅ DO - Use type:**
+```typescript
+export type User = {
+  userId: string;
+  name: string;
+  email: string;
+  roles: Role[];
+};
+
+export type ValidationResult = {
+  allTablesExist: boolean;
+  missingTables: string[];
+};
+```
+
+**❌ DON'T - Use interface:**
+```typescript
+// NEVER do this
+export interface User {
+  userId: string;
+  name: string;
+}
+```
+
+**Exception:** The ONLY exception is TypeScript declaration merging (e.g., extending Express types in `.d.ts` files), which technically requires `interface`:
+```typescript
+// Only acceptable use of interface (declaration merging)
+declare global {
+  namespace Express {
+    interface Request {
+      user?: User;
+    }
+  }
+}
+```
+
+**Why types over interfaces?**
+- Consistent codebase style
+- Types are more flexible (can represent unions, intersections, primitives, etc.)
+- Reduces cognitive load (one way to do things)
+- Avoids confusion between when to use which
+
+### Type Organization Structure
+
+**CRITICAL RULE: Types must mirror the source folder structure**
+
+All types are organized in the `src/types` folder, with subdirectories that mirror the actual source code structure. This creates a clear relationship between types and their related code.
+
+**Structure:**
+```
+src/
+├── types/                          # All type definitions
+│   ├── auth/                       # Types related to src/auth
+│   │   └── type.ts                # User type
+│   ├── bigquery/                   # Types related to src/bigquery
+│   │   └── type.ts                # RolePrivilege, MigrationResult, ValidationResult
+│   ├── testing/                    # Types related to src/testing
+│   │   └── type.ts                # Mock types (MockTable, MockDataset, MockBigQuery)
+│   ├── error.types.ts             # Common error types
+│   └── express.d.ts               # Express type extensions
+│
+├── auth/                          # Auth-related code
+│   ├── auth.service.ts           # Uses User from types/auth/type
+│   └── ...
+│
+├── bigquery/                      # BigQuery-related code
+│   ├── bigquery.service.ts       # Uses types from types/bigquery/type
+│   └── ...
+│
+└── dto/                           # Data Transfer Objects (classes)
+    └── auth/
+        └── create-user.dto.ts    # DTOs remain as classes in dto folder
+```
+
+**File Naming Convention:**
+- Each type folder has a single `type.ts` file
+- Special files: `error.types.ts`, `express.d.ts`
+
+**Import Examples:**
+```typescript
+// In src/auth/auth.service.ts
+import { User } from '../types/auth/type';
+
+// In src/bigquery/bigquery.service.ts
+import { User } from '../types/auth/type';
+import { RolePrivilege, MigrationResult } from '../types/bigquery/type';
+
+// In src/testing/mocks/bigquery.mocks.ts
+import { MockTable, MockDataset, MockBigQuery } from '../../types/testing/type';
+```
+
+**Rules:**
+1. **Mirror Structure**: If code is in `src/auth`, types go in `src/types/auth/type.ts`
+2. **Single File**: Each type folder has ONE `type.ts` file (not multiple files)
+3. **No Interfaces**: Types live in `types` folder, NOT scattered in feature folders
+4. **DTOs Exception**: Data Transfer Objects remain as classes in `src/dto` folder
+
+**Why this structure?**
+- Clear separation of types from implementation
+- Easy to find types (just mirror the folder name)
+- Prevents circular dependencies
+- Centralized type management
+- Consistent import paths
+
+---
+
 ## Core Architecture Principles
 
 ### 1. ENUM-Driven Architecture (ANCHOR STONE)

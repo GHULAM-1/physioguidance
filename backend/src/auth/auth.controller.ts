@@ -6,7 +6,7 @@ import { AuthGuard } from './guards/auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Role } from '../bigquery/enums/roles.enum';
 import { Privilege } from '../bigquery/enums/privilege.enum';
-import type { User } from '../bigquery/interfaces/user.interface';
+import type { User } from '../types/auth/type';
 
 @Controller('auth')
 export class AuthController {

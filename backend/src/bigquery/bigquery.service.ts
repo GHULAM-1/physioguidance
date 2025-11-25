@@ -3,7 +3,8 @@ import { BigQuery } from '@google-cloud/bigquery';
 import { v4 as uuidv4 } from 'uuid';
 import { Role, getRoleTableName } from './enums/roles.enum';
 import { Privilege } from './enums/privilege.enum';
-import { User, CreateUserDto } from './interfaces/user.interface';
+import { User } from '../types/auth/type';
+import { CreateUserDto } from '../dto/auth/create-user.dto';
 
 @Injectable()
 export class BigQueryService {

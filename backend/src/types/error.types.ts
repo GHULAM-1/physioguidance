@@ -1,6 +1,6 @@
-export interface ErrorWithName extends Error {
+export type ErrorWithName = Error & {
   name: string;
-}
+};
 
 export function isErrorWithName(error: unknown): error is ErrorWithName {
   return (

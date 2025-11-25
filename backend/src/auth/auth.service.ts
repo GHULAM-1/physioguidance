@@ -10,7 +10,7 @@ import { LoginDto } from '../dto/auth/login.dto';
 import { CreateUserDto } from '../dto/auth/create-user.dto';
 import { Role } from '../bigquery/enums/roles.enum';
 import { Privilege } from '../bigquery/enums/privilege.enum';
-import { User } from '../bigquery/interfaces/user.interface';
+import { User } from '../types/auth/type';
 import * as jwt from 'jsonwebtoken';
 import { jwtConfig } from './jwt.config';
 

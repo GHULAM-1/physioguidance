@@ -1,4 +1,4 @@
-import { User } from '../bigquery/interfaces/user.interface';
+import { User } from './auth/type';
 
 declare global {
   namespace Express {
