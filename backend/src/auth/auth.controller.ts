@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Body,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from '../dto/auth/register.dto';
 import { LoginDto } from '../dto/auth/login.dto';
@@ -23,7 +17,7 @@ export class AuthController {
     const user = await this.authService.register(registerDto);
     const token = this.authService.generateToken(user);
     // Don't return password
-    const { password, ...result } = user;
+    const { password: _password, ...result } = user;
     return {
       success: true,
       message: 'User registered successfully',
@@ -37,7 +31,7 @@ export class AuthController {
     const user = await this.authService.login(loginDto);
     const token = this.authService.generateToken(user);
 
-    const { password, ...result } = user;
+    const { password: _password, ...result } = user;
     return {
       success: true,
       message: 'Login successful',
@@ -48,8 +42,8 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(AuthGuard)
-  async getCurrentUser(@CurrentUser() user: User) {
-    const { password, ...result } = user;
+  getCurrentUser(@CurrentUser() user: User) {
+    const { password: _password, ...result } = user;
     return {
       success: true,
       data: result,
@@ -57,7 +51,7 @@ export class AuthController {
   }
 
   @Get('roles')
-  async getAvailableRoles() {
+  getAvailableRoles() {
     // Return all roles from the ENUM - this is the single source of truth
     return {
       success: true,
@@ -66,12 +60,11 @@ export class AuthController {
   }
 
   @Get('privileges')
-  async getAvailablePrivileges() {
+  getAvailablePrivileges() {
     // Return all privileges from the ENUM
     return {
       success: true,
       data: Object.values(Privilege),
     };
   }
-
 }

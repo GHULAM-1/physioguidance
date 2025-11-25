@@ -10,7 +10,7 @@ async function bootstrap() {
   // Enable CORS with proper origin for credentials
   const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [
     'http://localhost:8080',
-    'http://localhost:3000'
+    'http://localhost:3000',
   ];
 
   app.enableCors({

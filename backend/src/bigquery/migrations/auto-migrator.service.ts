@@ -23,7 +23,8 @@ export class AutoMigratorService {
   constructor(private readonly validator: TableValidatorService) {
     this.bigquery = new BigQuery({
       projectId: process.env.BIGQUERY_PROJECT_ID || 'test-project',
-      apiEndpoint: process.env.BIGQUERY_EMULATOR_HOST || 'http://localhost:9050',
+      apiEndpoint:
+        process.env.BIGQUERY_EMULATOR_HOST || 'http://localhost:9050',
     });
     this.datasetId = process.env.BIGQUERY_DATASET_ID || 'test_dataset';
   }
@@ -65,12 +66,17 @@ export class AutoMigratorService {
         this.logger.log(`✅ Created table: ${tableName}`);
       } catch (error) {
         failed.push({ table: tableName, error: error.message });
-        this.logger.error(`❌ Failed to create table ${tableName}:`, error.message);
+        this.logger.error(
+          `❌ Failed to create table ${tableName}:`,
+          error.message,
+        );
       }
     }
 
     if (created.length > 0) {
-      this.logger.log(`✅ Auto-migration complete: Created ${created.length} table(s)`);
+      this.logger.log(
+        `✅ Auto-migration complete: Created ${created.length} table(s)`,
+      );
     }
 
     if (failed.length > 0) {
@@ -114,7 +120,10 @@ export class AutoMigratorService {
         this.logger.log(`✅ Created dataset: ${this.datasetId}`);
       }
     } catch (error) {
-      this.logger.error(`Failed to create dataset ${this.datasetId}:`, error.message);
+      this.logger.error(
+        `Failed to create dataset ${this.datasetId}:`,
+        error.message,
+      );
       throw error;
     }
   }

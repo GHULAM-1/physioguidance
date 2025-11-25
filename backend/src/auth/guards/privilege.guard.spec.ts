@@ -32,14 +32,14 @@ describe('PrivilegeGuard', () => {
     reflector = module.get<Reflector>(Reflector);
   });
 
-  const createMockExecutionContext = (user: any): ExecutionContext => {
+  const createMockExecutionContext = (user: unknown): ExecutionContext => {
     return {
       getHandler: jest.fn(),
       getClass: jest.fn(),
       switchToHttp: jest.fn().mockReturnValue({
         getRequest: jest.fn().mockReturnValue({ user }),
       }),
-    } as any;
+    } as ExecutionContext;
   };
 
   describe('PBAC - Privilege-Based Access Control', () => {

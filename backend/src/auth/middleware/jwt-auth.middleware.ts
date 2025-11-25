@@ -1,8 +1,13 @@
-import { Injectable, NestMiddleware, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NestMiddleware,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { jwtConfig } from '../jwt.config';
 import { BigQueryService } from '../../bigquery/bigquery.service';
+import { getErrorName } from '../../types/error.types';
 
 @Injectable()
 export class JwtAuthMiddleware implements NestMiddleware {
@@ -33,12 +38,13 @@ export class JwtAuthMiddleware implements NestMiddleware {
       }
 
       // Attach user to request object
-      req['user'] = user;
+      req.user = user;
       next();
-    } catch (error) {
-      if (error.name === 'TokenExpiredError') {
+    } catch (error: unknown) {
+      const errorName = getErrorName(error);
+      if (errorName === 'TokenExpiredError') {
         throw new UnauthorizedException('Token expired');
-      } else if (error.name === 'JsonWebTokenError') {
+      } else if (errorName === 'JsonWebTokenError') {
         throw new UnauthorizedException('Invalid token');
       }
       throw new UnauthorizedException('Authentication failed');

@@ -152,7 +152,7 @@ export class BigQueryService {
   async updateUser(userId: string, updateData: Partial<User>): Promise<User> {
     // Build UPDATE query dynamically based on provided fields
     const fieldsToUpdate: string[] = [];
-    const params: any = { userId };
+    const params: Record<string, string | string[]> = { userId };
 
     if (updateData.name !== undefined) {
       fieldsToUpdate.push('name = @name');
@@ -316,11 +316,17 @@ export class BigQueryService {
     // For each user, fetch their privileges
     const usersWithPrivileges = await Promise.all(
       users.map(async (user) => {
-        const privileges: Record<Role, Privilege> = {} as Record<Role, Privilege>;
+        const privileges: Record<Role, Privilege> = {} as Record<
+          Role,
+          Privilege
+        >;
 
         // Fetch privilege for each role
         for (const role of user.roles) {
-          const privilege = await this.getUserPrivilegeForRole(user.userId, role);
+          const privilege = await this.getUserPrivilegeForRole(
+            user.userId,
+            role,
+          );
           if (privilege) {
             privileges[role] = privilege;
           }
@@ -330,7 +336,7 @@ export class BigQueryService {
           ...user,
           privileges,
         };
-      })
+      }),
     );
 
     return usersWithPrivileges;

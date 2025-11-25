@@ -3,7 +3,11 @@ import { AuthService } from './auth.service';
 import { BigQueryService } from '../bigquery/bigquery.service';
 import { Role } from '../bigquery/enums/roles.enum';
 import { Privilege } from '../bigquery/enums/privilege.enum';
-import { UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  UnauthorizedException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 
 /**
  * RBAC + PBAC Integration Tests
@@ -231,7 +235,9 @@ describe('RBAC + PBAC Integration Tests', () => {
 
       bigQueryService.getUserById.mockResolvedValueOnce(existingUser);
       bigQueryService.getUserByEmailExcludingUserId.mockResolvedValueOnce(null);
-      bigQueryService.updateUserRolesAndPrivileges.mockResolvedValueOnce(undefined);
+      bigQueryService.updateUserRolesAndPrivileges.mockResolvedValueOnce(
+        undefined,
+      );
       bigQueryService.getUserById.mockResolvedValueOnce({
         ...existingUser,
         privileges: { [Role.ADMIN]: Privilege.EDITOR },
@@ -262,7 +268,9 @@ describe('RBAC + PBAC Integration Tests', () => {
 
       bigQueryService.getUserById.mockResolvedValueOnce(existingUser);
       bigQueryService.getUserByEmailExcludingUserId.mockResolvedValueOnce(null);
-      bigQueryService.updateUserRolesAndPrivileges.mockResolvedValueOnce(undefined);
+      bigQueryService.updateUserRolesAndPrivileges.mockResolvedValueOnce(
+        undefined,
+      );
       bigQueryService.getUserById.mockResolvedValueOnce({
         ...existingUser,
         privileges: { [Role.ADMIN]: Privilege.VIEWER },
@@ -296,7 +304,9 @@ describe('RBAC + PBAC Integration Tests', () => {
 
       bigQueryService.getUserById.mockResolvedValueOnce(existingUser);
       bigQueryService.getUserByEmailExcludingUserId.mockResolvedValueOnce(null);
-      bigQueryService.updateUserRolesAndPrivileges.mockResolvedValueOnce(undefined);
+      bigQueryService.updateUserRolesAndPrivileges.mockResolvedValueOnce(
+        undefined,
+      );
       bigQueryService.getUserById.mockResolvedValueOnce({
         ...existingUser,
         roles: [Role.USER, Role.ADMIN],
@@ -335,7 +345,9 @@ describe('RBAC + PBAC Integration Tests', () => {
 
       bigQueryService.getUserById.mockResolvedValueOnce(existingUser);
       bigQueryService.getUserByEmailExcludingUserId.mockResolvedValueOnce(null);
-      bigQueryService.updateUserRolesAndPrivileges.mockResolvedValueOnce(undefined);
+      bigQueryService.updateUserRolesAndPrivileges.mockResolvedValueOnce(
+        undefined,
+      );
       bigQueryService.getUserById.mockResolvedValueOnce({
         ...existingUser,
         roles: [Role.USER],

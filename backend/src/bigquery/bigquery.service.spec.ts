@@ -3,6 +3,13 @@ import { BigQueryService } from './bigquery.service';
 import { BigQuery } from '@google-cloud/bigquery';
 import { Role } from './enums/roles.enum';
 import { Privilege } from './enums/privilege.enum';
+import {
+  createMockBigQuery,
+  createMockDataset,
+  createMockTable,
+  MockTable,
+  MockDataset,
+} from '../testing/mocks/bigquery.mocks';
 
 // Mock BigQuery
 jest.mock('@google-cloud/bigquery');
@@ -10,28 +17,19 @@ jest.mock('@google-cloud/bigquery');
 describe('BigQueryService', () => {
   let service: BigQueryService;
   let mockBigQuery: jest.Mocked<BigQuery>;
-  let mockDataset: any;
-  let mockTable: any;
+  let mockDataset: MockDataset;
+  let mockTable: MockTable;
 
   beforeEach(async () => {
     // Create mock instances
-    mockTable = {
-      insert: jest.fn().mockResolvedValue([]),
-      exists: jest.fn().mockResolvedValue([true]),
-    };
-
-    mockDataset = {
-      table: jest.fn().mockReturnValue(mockTable),
-      createTable: jest.fn().mockResolvedValue([mockTable]),
-    };
-
-    mockBigQuery = {
-      dataset: jest.fn().mockReturnValue(mockDataset),
-      query: jest.fn().mockResolvedValue([[]]),
-    } as any;
+    mockTable = createMockTable();
+    mockDataset = createMockDataset(mockTable);
+    mockBigQuery = createMockBigQuery(
+      mockDataset,
+    ) as unknown as jest.Mocked<BigQuery>;
 
     (BigQuery as jest.MockedClass<typeof BigQuery>).mockImplementation(
-      () => mockBigQuery,
+      () => mockBigQuery as unknown as BigQuery,
     );
 
     const module: TestingModule = await Test.createTestingModule({
@@ -136,7 +134,6 @@ describe('BigQueryService', () => {
       expect(result).toBeNull();
     });
   });
-
 
   describe('getUserPrivilegeForRole', () => {
     it('should return privilege when user has role', async () => {

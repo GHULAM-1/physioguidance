@@ -13,12 +13,12 @@ describe('AuthGuard', () => {
     guard = module.get<AuthGuard>(AuthGuard);
   });
 
-  const createMockExecutionContext = (user: any): ExecutionContext => {
+  const createMockExecutionContext = (user: unknown): ExecutionContext => {
     return {
       switchToHttp: jest.fn().mockReturnValue({
         getRequest: jest.fn().mockReturnValue({ user }),
       }),
-    } as any;
+    } as ExecutionContext;
   };
 
   describe('Authentication Verification', () => {
@@ -102,7 +102,7 @@ describe('AuthGuard', () => {
         switchToHttp: jest.fn().mockReturnValue({
           getRequest: jest.fn().mockReturnValue(mockRequest),
         }),
-      } as any;
+      } as ExecutionContext;
 
       const result = guard.canActivate(context);
 

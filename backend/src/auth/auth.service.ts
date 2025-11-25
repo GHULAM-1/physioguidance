@@ -42,7 +42,9 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto): Promise<User> {
-    const user = await this.bigQueryService.getUserByEmailWithPrivileges(loginDto.email);
+    const user = await this.bigQueryService.getUserByEmailWithPrivileges(
+      loginDto.email,
+    );
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');

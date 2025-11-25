@@ -24,7 +24,8 @@ export class TableValidatorService {
   constructor() {
     this.bigquery = new BigQuery({
       projectId: process.env.BIGQUERY_PROJECT_ID || 'test-project',
-      apiEndpoint: process.env.BIGQUERY_EMULATOR_HOST || 'http://localhost:9050',
+      apiEndpoint:
+        process.env.BIGQUERY_EMULATOR_HOST || 'http://localhost:9050',
     });
     this.datasetId = process.env.BIGQUERY_DATASET_ID || 'test_dataset';
   }
@@ -65,7 +66,9 @@ export class TableValidatorService {
     if (allTablesExist) {
       this.logger.log('✅ All required tables exist');
     } else {
-      this.logger.error(`❌ Missing ${missingTables.length + (usersTableExists ? 0 : 1)} table(s)`);
+      this.logger.error(
+        `❌ Missing ${missingTables.length + (usersTableExists ? 0 : 1)} table(s)`,
+      );
     }
 
     return {

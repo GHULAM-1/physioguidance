@@ -28,7 +28,7 @@ export class AdminController {
   @RequirePrivilege(Privilege.EDITOR)
   async createUser(@Body() createUserDto: CreateUserDto) {
     const user = await this.authService.createUserByAdmin(createUserDto);
-    const { password, ...result } = user;
+    const { password: _password, ...result } = user;
     return {
       success: true,
       message: 'User created successfully',
@@ -42,7 +42,9 @@ export class AdminController {
   async getAllUsers() {
     const users = await this.authService.getAllUsers();
     // Remove passwords from response
-    const sanitizedUsers = users.map(({ password, ...user }) => user);
+    const sanitizedUsers = users.map(
+      ({ password: _password, ...user }) => user,
+    );
     return {
       success: true,
       data: sanitizedUsers,
@@ -63,7 +65,9 @@ export class AdminController {
     }
 
     const users = await this.authService.getUsersByDepartment(role as Role);
-    const sanitizedUsers = users.map(({ password, ...user }) => user);
+    const sanitizedUsers = users.map(
+      ({ password: _password, ...user }) => user,
+    );
     return {
       success: true,
       data: sanitizedUsers,
@@ -83,7 +87,7 @@ export class AdminController {
       userId,
       updateUserDto,
     );
-    const { password, ...result } = user;
+    const { password: _password, ...result } = user;
     return {
       success: true,
       message: 'User updated successfully',

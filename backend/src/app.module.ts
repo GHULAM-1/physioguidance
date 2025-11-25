@@ -5,6 +5,7 @@ import { BigQueryModule } from './bigquery/bigquery.module';
 import { AuthModule } from './auth/auth.module';
 import { TableValidatorService } from './bigquery/validators/table-validator.service';
 import { AutoMigratorService } from './bigquery/migrations/auto-migrator.service';
+import { getErrorMessage } from './types/error.types';
 
 @Module({
   imports: [BigQueryModule, AuthModule],
@@ -36,18 +37,23 @@ export class AppModule implements OnModuleInit {
         const result = await this.migrator.autoCreateMissingTables();
 
         if (result.created.length > 0) {
-          this.logger.log(`✅ Created ${result.created.length} table(s): ${result.created.join(', ')}`);
+          this.logger.log(
+            `✅ Created ${result.created.length} table(s): ${result.created.join(', ')}`,
+          );
         }
 
         if (result.failed.length > 0) {
-          this.logger.error(`❌ Failed to create ${result.failed.length} table(s)`);
+          this.logger.error(
+            `❌ Failed to create ${result.failed.length} table(s)`,
+          );
           result.failed.forEach(({ table, error }) => {
             this.logger.error(`  - ${table}: ${error}`);
           });
         }
-      } catch (error) {
-        this.logger.error('❌ Auto-migration failed:', error.message);
-        throw new Error(`Database initialization failed: ${error.message}`);
+      } catch (error: unknown) {
+        const errorMessage = getErrorMessage(error);
+        this.logger.error('❌ Auto-migration failed:', errorMessage);
+        throw new Error(`Database initialization failed: ${errorMessage}`);
       }
     } else {
       this.logger.log('🔍 AUTO_MIGRATE disabled - validating tables exist');
@@ -62,11 +68,13 @@ export class AppModule implements OnModuleInit {
         }
 
         this.logger.error(`❌ Missing tables: ${missing.join(', ')}`);
-        this.logger.error('💡 Fix: Run "npm run init:bigquery" or set AUTO_MIGRATE=true');
+        this.logger.error(
+          '💡 Fix: Run "npm run init:bigquery" or set AUTO_MIGRATE=true',
+        );
 
         throw new Error(
           `Database tables missing: ${missing.join(', ')}. ` +
-          `Run "npm run init:bigquery" to create them or set AUTO_MIGRATE=true to auto-create.`,
+            `Run "npm run init:bigquery" to create them or set AUTO_MIGRATE=true to auto-create.`,
         );
       }
 
