@@ -44,12 +44,26 @@ export class PrivilegeGuard implements CanActivate {
     // Check privilege for each required role
     const rolesToCheck = requiredRoles || user.roles;
 
+    if (!rolesToCheck || rolesToCheck.length === 0) {
+      throw new ForbiddenException(
+        `User does not have required privilege: ${requiredPrivilege}`,
+      );
+    }
+
     for (const role of rolesToCheck) {
       if (user.roles.includes(role)) {
         const userPrivilege =
           await this.bigQueryService.getUserPrivilegeForRole(user.userId, role);
 
+        // Check if user has the required privilege
+        // EDITOR can do everything VIEWER can do (privilege escalation)
         if (userPrivilege === requiredPrivilege) {
+          return true;
+        }
+        if (
+          requiredPrivilege === Privilege.VIEWER &&
+          userPrivilege === Privilege.EDITOR
+        ) {
           return true;
         }
       }
