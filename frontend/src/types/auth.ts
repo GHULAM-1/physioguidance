@@ -37,6 +37,14 @@ export type CreateUserRequest = {
   privileges: Record<Role, Privilege>;
 };
 
+export type UpdateUserRequest = {
+  name?: string;
+  email?: string;
+  password?: string;
+  roles?: Role[];
+  privileges?: Record<Role, Privilege>;
+};
+
 export type AuthResponse = {
   success: boolean;
   message: string;
@@ -48,4 +56,9 @@ export type UsersListResponse = {
   success: boolean;
   data: User[];
   count: number;
+};
+
+export type DeleteUserResponse = {
+  success: boolean;
+  message: string;
 };

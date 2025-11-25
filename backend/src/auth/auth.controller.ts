@@ -2,6 +2,8 @@ import {
   Controller,
   Post,
   Get,
+  Put,
+  Delete,
   Body,
   Param,
   UseGuards,
@@ -109,6 +111,38 @@ export class AuthController {
     return {
       success: true,
       data: result,
+    };
+  }
+
+  @Put('admin/users/:userId')
+  @UseGuards(AuthGuard, RolesGuard, PrivilegeGuard)
+  @Roles(Role.ADMIN)
+  @RequirePrivilege(Privilege.EDITOR)
+  async updateUser(
+    @Param('userId') userId: string,
+    @Body() updateUserDto: CreateUserDto,
+  ) {
+    const user = await this.authService.updateUserByAdmin(
+      userId,
+      updateUserDto,
+    );
+    const { password, ...result } = user;
+    return {
+      success: true,
+      message: 'User updated successfully',
+      data: result,
+    };
+  }
+
+  @Delete('admin/users/:userId')
+  @UseGuards(AuthGuard, RolesGuard, PrivilegeGuard)
+  @Roles(Role.ADMIN)
+  @RequirePrivilege(Privilege.EDITOR)
+  async deleteUser(@Param('userId') userId: string) {
+    await this.authService.deleteUserByAdmin(userId);
+    return {
+      success: true,
+      message: 'User deleted successfully',
     };
   }
 }

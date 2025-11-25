@@ -4,7 +4,35 @@ import { useState, useEffect } from 'react';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { authApi } from '@/lib/auth/api';
-import { Role, Privilege, type User, type CreateUserRequest } from '@/types/auth';
+import { Role, Privilege, type User, type CreateUserRequest, type UpdateUserRequest } from '@/types/auth';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 function AdminDashboard() {
   const { user, logout } = useAuth();
@@ -24,6 +52,18 @@ function AdminDashboard() {
   const [privileges, setPrivileges] = useState<Record<Role, Privilege>>({} as Record<Role, Privilege>);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Edit and Delete modal state
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+  });
+  const [editSelectedRoles, setEditSelectedRoles] = useState<Role[]>([]);
+  const [editPrivileges, setEditPrivileges] = useState<Record<Role, Privilege>>({} as Record<Role, Privilege>);
 
   useEffect(() => {
     loadUsers();
@@ -97,6 +137,103 @@ function AdminDashboard() {
     }
   };
 
+  const handleEditClick = (user: User) => {
+    setSelectedUser(user);
+    setEditFormData({
+      name: user.name,
+      email: user.email,
+      password: '', // Always start with empty password
+    });
+    setEditSelectedRoles(user.roles);
+
+    // Initialize with VIEWER for all roles (ideally fetch from backend)
+    const initialPrivileges: Record<Role, Privilege> = {} as Record<Role, Privilege>;
+    user.roles.forEach(role => {
+      initialPrivileges[role] = Privilege.VIEWER;
+    });
+    setEditPrivileges(initialPrivileges);
+
+    setShowEditModal(true);
+  };
+
+  const handleEditRoleToggle = (role: Role) => {
+    if (editSelectedRoles.includes(role)) {
+      setEditSelectedRoles(editSelectedRoles.filter(r => r !== role));
+      const newPrivileges = { ...editPrivileges };
+      delete newPrivileges[role];
+      setEditPrivileges(newPrivileges);
+    } else {
+      setEditSelectedRoles([...editSelectedRoles, role]);
+      setEditPrivileges({ ...editPrivileges, [role]: Privilege.VIEWER });
+    }
+  };
+
+  const handleEditPrivilegeChange = (role: Role, privilege: Privilege) => {
+    setEditPrivileges({ ...editPrivileges, [role]: privilege });
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    if (!selectedUser) return;
+
+    if (editSelectedRoles.length === 0) {
+      setError('Please select at least one role');
+      return;
+    }
+
+    try {
+      const updateData: UpdateUserRequest = {
+        name: editFormData.name,
+        email: editFormData.email,
+        roles: editSelectedRoles,
+        privileges: editPrivileges,
+      };
+
+      // Only include password if it's not empty
+      if (editFormData.password.trim() !== '') {
+        updateData.password = editFormData.password;
+      }
+
+      await authApi.updateUser(selectedUser.userId, updateData);
+      setSuccess('User updated successfully!');
+      setShowEditModal(false);
+      loadUsers();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update user');
+    }
+  };
+
+  const handleDeleteClick = (user: User) => {
+    setSelectedUser(user);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedUser) return;
+
+    setError('');
+    setSuccess('');
+
+    // Prevent deleting currently logged-in user
+    if (user?.userId === selectedUser.userId) {
+      setError('Cannot delete your own account while logged in');
+      return;
+    }
+
+    try {
+      await authApi.deleteUser(selectedUser.userId);
+      setSuccess('User deleted successfully!');
+      setShowDeleteModal(false);
+      setSelectedUser(null);
+      loadUsers();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete user');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow">
@@ -158,56 +295,61 @@ function AdminDashboard() {
         </div>
 
         <div className="overflow-hidden bg-white shadow sm:rounded-lg">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                  Roles
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                  Created At
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 bg-white">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Roles</TableHead>
+                <TableHead>Created At</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {loading ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-gray-500">
                     Loading...
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : filteredUsers.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-gray-500">
                     No users found
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 filteredUsers.map((user) => (
-                  <tr key={user.userId}>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
-                      {user.name}
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                      {user.email}
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                      {user.roles.join(', ')}
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                  <TableRow key={user.userId}>
+                    <TableCell className="font-medium">{user.name}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>{user.roles.join(', ')}</TableCell>
+                    <TableCell>
                       {new Date(user.created_at).toLocaleDateString()}
-                    </td>
-                  </tr>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditClick(user)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteClick(user)}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
                 ))
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </div>
 
@@ -317,6 +459,166 @@ function AdminDashboard() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Edit User Dialog */}
+      {showEditModal && selectedUser && (
+        <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+          <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit User</DialogTitle>
+              <DialogDescription>
+                Update user information. Leave password blank to keep existing password.
+              </DialogDescription>
+            </DialogHeader>
+
+            <form onSubmit={handleEditSubmit}>
+              {error && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-name">Name</Label>
+                  <Input
+                    id="edit-name"
+                    type="text"
+                    required
+                    value={editFormData.name}
+                    onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-email">Email</Label>
+                  <Input
+                    id="edit-email"
+                    type="email"
+                    required
+                    value={editFormData.email}
+                    onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-password">
+                    Password <span className="text-gray-500 text-sm">(optional - leave blank to keep existing)</span>
+                  </Label>
+                  <Input
+                    id="edit-password"
+                    type="password"
+                    value={editFormData.password}
+                    onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
+                    placeholder="Leave blank to keep current password"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Roles & Privileges</Label>
+                  {Object.values(Role).filter(r => r !== Role.LEARNER).map((role) => (
+                    <div key={role} className="rounded-md border border-gray-200 p-3 space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`edit-${role}`}
+                          checked={editSelectedRoles.includes(role)}
+                          onCheckedChange={() => handleEditRoleToggle(role)}
+                        />
+                        <Label htmlFor={`edit-${role}`} className="font-medium cursor-pointer">
+                          {role}
+                        </Label>
+                      </div>
+                      {editSelectedRoles.includes(role) && (
+                        <div className="ml-6">
+                          <Select
+                            value={editPrivileges[role]}
+                            onValueChange={(value) => handleEditPrivilegeChange(role, value as Privilege)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value={Privilege.VIEWER}>VIEWER</SelectItem>
+                              <SelectItem value={Privilege.EDITOR}>EDITOR</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowEditModal(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit">Update User</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteModal && selectedUser && (
+        <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Deletion</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this user? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+
+            {error && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="py-4 space-y-2">
+              <p className="text-sm">
+                <span className="font-semibold">Name:</span> {selectedUser.name}
+              </p>
+              <p className="text-sm">
+                <span className="font-semibold">Email:</span> {selectedUser.email}
+              </p>
+              <p className="text-sm">
+                <span className="font-semibold">Roles:</span> {selectedUser.roles.join(', ')}
+              </p>
+              <p className="text-sm">
+                <span className="font-semibold">Created:</span>{' '}
+                {new Date(selectedUser.created_at).toLocaleDateString()}
+              </p>
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setSelectedUser(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleDeleteConfirm}
+              >
+                Delete User
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

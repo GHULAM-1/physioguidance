@@ -85,12 +85,81 @@ export class AuthService {
     return await this.bigQueryService.getUsersByRole(role);
   }
 
+  async updateUserByAdmin(
+    userId: string,
+    updateUserDto: CreateUserDto,
+  ): Promise<User> {
+    // Check if user exists
+    const existingUser = await this.bigQueryService.getUserById(userId);
+    if (!existingUser) {
+      throw new BadRequestException('User not found');
+    }
+
+    // If email is being changed, check for conflicts
+    if (updateUserDto.email && updateUserDto.email !== existingUser.email) {
+      const emailConflict =
+        await this.bigQueryService.getUserByEmailExcludingUserId(
+          updateUserDto.email,
+          userId,
+        );
+      if (emailConflict) {
+        throw new ConflictException('Email already in use by another user');
+      }
+    }
+
+    // Handle roles and privileges update separately
+    if (updateUserDto.roles && updateUserDto.privileges) {
+      // Validate that privileges are provided for all roles
+      for (const role of updateUserDto.roles) {
+        if (!updateUserDto.privileges[role]) {
+          throw new BadRequestException(
+            `Privilege not provided for role: ${role}`,
+          );
+        }
+      }
+
+      await this.bigQueryService.updateUserRolesAndPrivileges(
+        userId,
+        updateUserDto.roles,
+        updateUserDto.privileges,
+      );
+    }
+
+    // Update basic user fields (name, email, password)
+    const updateData: Partial<User> = {};
+    if (updateUserDto.name !== undefined) updateData.name = updateUserDto.name;
+    if (updateUserDto.email !== undefined)
+      updateData.email = updateUserDto.email;
+    if (updateUserDto.password !== undefined && updateUserDto.password !== '') {
+      updateData.password = updateUserDto.password;
+    }
+
+    if (Object.keys(updateData).length > 0) {
+      return await this.bigQueryService.updateUser(userId, updateData);
+    }
+
+    // Return updated user
+    return (await this.bigQueryService.getUserById(userId)) as User;
+  }
+
+  async deleteUserByAdmin(userId: string): Promise<void> {
+    // Check if user exists
+    const existingUser = await this.bigQueryService.getUserById(userId);
+    if (!existingUser) {
+      throw new BadRequestException('User not found');
+    }
+
+    await this.bigQueryService.deleteUser(userId);
+  }
+
   generateToken(user: User): string {
     const payload = {
       userId: user.userId,
       email: user.email,
       roles: user.roles,
     };
-    return jwt.sign(payload, jwtConfig.secret, { expiresIn: jwtConfig.expiresIn } as jwt.SignOptions);
+    return jwt.sign(payload, jwtConfig.secret, {
+      expiresIn: jwtConfig.expiresIn,
+    } as jwt.SignOptions);
   }
 }

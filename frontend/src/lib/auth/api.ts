@@ -3,7 +3,9 @@ import type {
   LoginRequest,
   RegisterRequest,
   CreateUserRequest,
+  UpdateUserRequest,
   AuthResponse,
+  DeleteUserResponse,
   UsersListResponse,
   Role,
 } from '@/types/auth';
@@ -111,6 +113,37 @@ export const authApi = {
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message || 'Failed to fetch current user');
+    }
+
+    return response.json();
+  },
+
+  async updateUser(userId: string, data: UpdateUserRequest): Promise<AuthResponse> {
+    const response = await fetch(`${API_BASE_URL}/auth/admin/users/${userId}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'User update failed');
+    }
+
+    return response.json();
+  },
+
+  async deleteUser(userId: string): Promise<DeleteUserResponse> {
+    const response = await fetch(`${API_BASE_URL}/auth/admin/users/${userId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'User deletion failed');
     }
 
     return response.json();
