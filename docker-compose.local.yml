@@ -13,6 +13,8 @@ services:
     command:
       - "--project=test-project"
       - "--dataset=test_dataset"
+    volumes:
+      - bigquery-data:/data
     restart: unless-stopped
     networks:
       - physioguidance-network
@@ -46,6 +48,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      target: development
     container_name: physioguidance-backend
     ports:
       - "3000:3000"
@@ -70,21 +73,21 @@ services:
     restart: unless-stopped
     networks:
       - physioguidance-network
-    # Removed volume mounts to use built image with CORS enabled
-    # volumes:
-    #   - ./backend:/app
-    #   - /app/node_modules
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
 
   # Next.js Frontend Application
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: development
     container_name: physioguidance-frontend
     ports:
       - "8080:8080"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - PORT=8080
       # BigQuery configuration (frontend only needs BigQuery)
       - NEXT_PUBLIC_BIGQUERY_PROJECT_ID=test-project
@@ -98,14 +101,14 @@ services:
     restart: unless-stopped
     networks:
       - physioguidance-network
-    # Removed volume mounts for production build - they were overriding the built files
-    # volumes:
-    #   - ./frontend:/app
-    #   - /app/node_modules
-    #   - /app/.next
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
 
 volumes:
   gcs-data:
+  bigquery-data:
 
 networks:
   physioguidance-network:

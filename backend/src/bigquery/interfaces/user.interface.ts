@@ -7,6 +7,7 @@ export interface User {
   email: string;
   password: string;
   roles: Role[];
+  privileges?: Record<Role, Privilege>; // Optional: Map each role to its privilege
   created_at: string;
 }
 

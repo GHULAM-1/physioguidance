@@ -1,3 +1,17 @@
+# Development Stage (for local hot reload)
+FROM node:20-alpine AS development
+WORKDIR /app
+
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm ci
+
+# Expose port
+EXPOSE 3000
+
+# Run in development mode with hot reload
+CMD ["npm", "run", "start:dev"]
+
 # Stage 1: Dependencies
 FROM node:20-alpine AS deps
 WORKDIR /app

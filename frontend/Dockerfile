@@ -1,3 +1,26 @@
+# Development Stage (for local hot reload)
+FROM node:20-alpine AS development
+
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+WORKDIR /app
+
+# Copy package files and install dependencies
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+# Expose port
+EXPOSE 8080
+
+# Set development environment
+ENV NODE_ENV=development
+ENV PORT=8080
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Run Next.js dev server
+CMD ["pnpm", "dev", "--port", "8080"]
+
 FROM node:20-alpine AS base
 
 # Install dependencies only when needed

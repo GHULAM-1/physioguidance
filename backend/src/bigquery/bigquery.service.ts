@@ -68,6 +68,27 @@ export class BigQueryService {
     return rows.length > 0 ? (rows[0] as User) : null;
   }
 
+  async getUserByEmailWithPrivileges(email: string): Promise<User | null> {
+    const user = await this.getUserByEmail(email);
+    if (!user) {
+      return null;
+    }
+
+    // Fetch privileges for each role
+    const privileges: Record<Role, Privilege> = {} as Record<Role, Privilege>;
+    for (const role of user.roles) {
+      const privilege = await this.getUserPrivilegeForRole(user.userId, role);
+      if (privilege) {
+        privileges[role] = privilege;
+      }
+    }
+
+    return {
+      ...user,
+      privileges,
+    };
+  }
+
   async getUserById(userId: string): Promise<User | null> {
     const query = `
       SELECT * FROM \`${this.datasetId}.users\`
@@ -286,5 +307,32 @@ export class BigQueryService {
 
     const [rows] = await this.bigquery.query(options);
     return rows.length > 0 ? (rows[0] as User) : null;
+  }
+
+  async getAllUsersWithPrivileges(): Promise<User[]> {
+    // Get all users first
+    const users = await this.getAllUsers();
+
+    // For each user, fetch their privileges
+    const usersWithPrivileges = await Promise.all(
+      users.map(async (user) => {
+        const privileges: Record<Role, Privilege> = {} as Record<Role, Privilege>;
+
+        // Fetch privilege for each role
+        for (const role of user.roles) {
+          const privilege = await this.getUserPrivilegeForRole(user.userId, role);
+          if (privilege) {
+            privileges[role] = privilege;
+          }
+        }
+
+        return {
+          ...user,
+          privileges,
+        };
+      })
+    );
+
+    return usersWithPrivileges;
   }
 }

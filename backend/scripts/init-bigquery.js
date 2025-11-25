@@ -63,10 +63,8 @@ async function initializeBigQuery() {
         console.log(`   ✅ Table ${tableName} created successfully`);
       } catch (error) {
         if (error.code === 409) {
-          console.log(`   ⚠️  Table ${tableName} already exists, deleting and recreating...`);
-          await dataset.table(tableName).delete();
-          await dataset.createTable(tableName, { schema });
-          console.log(`   ✅ Table ${tableName} recreated successfully`);
+          console.log(`   ℹ️  Table ${tableName} already exists, skipping...`);
+          // Skip - preserve existing data
         } else {
           throw error;
         }

@@ -42,7 +42,7 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto): Promise<User> {
-    const user = await this.bigQueryService.getUserByEmail(loginDto.email);
+    const user = await this.bigQueryService.getUserByEmailWithPrivileges(loginDto.email);
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -78,7 +78,7 @@ export class AuthService {
   }
 
   async getAllUsers(): Promise<User[]> {
-    return await this.bigQueryService.getAllUsers();
+    return await this.bigQueryService.getAllUsersWithPrivileges();
   }
 
   async getUsersByDepartment(role: Role): Promise<User[]> {

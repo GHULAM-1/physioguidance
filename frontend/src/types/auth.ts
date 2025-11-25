@@ -15,6 +15,7 @@ export type User = {
   name: string;
   email: string;
   roles: Role[];
+  privileges: Record<Role, Privilege>;
   created_at: string;
 };
 

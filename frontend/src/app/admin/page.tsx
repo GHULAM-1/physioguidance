@@ -42,6 +42,9 @@ function AdminDashboard() {
   const [showModal, setShowModal] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState<'all' | Role>('all');
 
+  // Check if current user has EDITOR privilege for ADMIN role
+  const hasEditorPrivilege = user?.privileges?.[Role.ADMIN] === Privilege.EDITOR;
+
   // Form state
   const [formData, setFormData] = useState({
     name: '',
@@ -146,12 +149,8 @@ function AdminDashboard() {
     });
     setEditSelectedRoles(user.roles);
 
-    // Initialize with VIEWER for all roles (ideally fetch from backend)
-    const initialPrivileges: Record<Role, Privilege> = {} as Record<Role, Privilege>;
-    user.roles.forEach(role => {
-      initialPrivileges[role] = Privilege.VIEWER;
-    });
-    setEditPrivileges(initialPrivileges);
+    // Use actual privileges from user object
+    setEditPrivileges(user.privileges);
 
     setShowEditModal(true);
   };
@@ -264,7 +263,13 @@ function AdminDashboard() {
           <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
           <button
             onClick={() => setShowModal(true)}
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500"
+            disabled={!hasEditorPrivilege}
+            title={!hasEditorPrivilege ? "You need EDITOR privilege to create users" : ""}
+            className={`rounded-md px-4 py-2 text-sm font-semibold text-white ${
+              hasEditorPrivilege
+                ? 'bg-blue-600 hover:bg-blue-500 cursor-pointer'
+                : 'bg-gray-400 cursor-not-allowed opacity-60'
+            }`}
           >
             Create New User
           </button>
@@ -333,6 +338,8 @@ function AdminDashboard() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleEditClick(user)}
+                          disabled={!hasEditorPrivilege}
+                          title={!hasEditorPrivilege ? "You need EDITOR privilege to edit users" : ""}
                         >
                           Edit
                         </Button>
@@ -340,6 +347,8 @@ function AdminDashboard() {
                           variant="destructive"
                           size="sm"
                           onClick={() => handleDeleteClick(user)}
+                          disabled={!hasEditorPrivilege}
+                          title={!hasEditorPrivilege ? "You need EDITOR privilege to delete users" : ""}
                         >
                           Delete
                         </Button>
